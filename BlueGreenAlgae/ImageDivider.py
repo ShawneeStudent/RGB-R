@@ -1,29 +1,91 @@
-from PIL import Image
-import numpy as np
-import matplotlib.pyplot as plt
+from PIL import Image, ImageDraw
+import matplotlib.pyplot as mpl
+from matplotlib.widgets import Button
+from enum import Enum
+import time
+import random
 
-def divide(imageArray,length,width):
+class Tag(Enum):
+    NONE = 0
+    ALGAE = 1
+    SPORE = 2
+    CYST = 3
+    SPORECYST = 4
+
+global currentTag
+
+def algaebutton(event):
+    global currentTag
+    currentTag = Tag.ALGAE
+    mpl.close()
+
+def sporebutton(event):
+    global currentTag
+    currentTag = Tag.SPORE
+    mpl.close()
+
+def cystbutton(event):
+    global currentTag
+    currentTag = Tag.CYST
+    mpl.close()
+
+def sporecystbutton(event):
+    global currentTag
+    currentTag = Tag.CYST
+    mpl.close()
+
+def nonebutton(event):
+    global currentTag
+    currentTag = Tag.NONE
+    mpl.close()
+
+def divide(image, width, height):
+    global currentTag
     i=0
-    j=0
-    newImage= bytearray(32*32*4)
-    for row in range(length,length+32):
+    newImage= bytearray(32*32*3)
+    for row in range(height,height+32):
         for pixel in range(width,width+32):
-            newImage[i][j]=imageArray.getpixel((row, pixel))
-            j+=1
-        i+=1
-    Image.frombytes("CMYK", (32, 32), bytes(newImage)).save('BankOImages/something_'+length+'_'+width+'.TIF')
+            for j in range(0,3):
+                newImage[i]=image.getpixel((pixel, row))[i%3]
+                i+=1
+    tmp = Image.frombytes("RGB", (32, 32), bytes(newImage))
+    rsq = image.copy()
+    draw = ImageDraw.Draw(rsq)
+    draw.rectangle(xy=[(width-1, height-1),(width+33,height+33)], outline = (255,0,0))
+    mpl.imshow(rsq)
+    mpl.axis([width-20, width+52, height-20, height+52])
+    axalgae = mpl.axes([0.85, 0.45, 0.1, 0.075])
+    axspore = mpl.axes([0.85, 0.35, 0.1, 0.075])
+    axcyst = mpl.axes([0.85, 0.25, 0.1, 0.075])
+    axsporecyst = mpl.axes([0.85, 0.15, 0.1, 0.075])
+    axnone = mpl.axes([0.85, 0.05, 0.1, 0.075])
+    balgae = Button(axalgae, 'Algae')
+    bspore = Button(axspore, 'Spore')
+    bcyst = Button(axcyst, 'Cyst')
+    bsporecyst = Button(axsporecyst, 'Both')
+    bnone = Button(axnone, 'None')
+    balgae.on_clicked(algaebutton)
+    bspore.on_clicked(sporebutton)
+    bcyst.on_clicked(cystbutton)
+    bsporecyst.on_clicked(sporecystbutton)
+    bnone.on_clicked(nonebutton)
+    mpl.show()
+    tmp.save('BankOImages/something_'+str(width)+'_'+str(height)+'.TIF')
 
 
-i=Image.open('something.TIF')
-iar=i.getdata()
-(w,h)=i.size
+
+
 if __name__ == "__main__":
-    u=0
-    v = 0
-    while u<h:
-        while v<w:
-            divide(i,u,v)
-            v+=32
-        u+=32
+    global currentTag
+    i = Image.open('01195655.TIF')
+    iar = i.getdata()
+    (w, h) = i.width, i.height
+    snum = int(input("Enter number of samples: "))
+    while snum > 0:
+        u = random.randint(0, w-33)
+        v = random.randint(0, h-33)
+        divide(i,u,v)
+        snum -= 1
+
 
 
