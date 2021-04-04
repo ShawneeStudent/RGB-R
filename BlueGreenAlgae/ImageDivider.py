@@ -39,7 +39,7 @@ def nonebutton(event):
     currentTag = Tag.NONE
     mpl.close()
 
-def divide(image, width, height):
+def divide(image, width, height, filname):
     global currentTag
     i=0
     newImage= bytearray(32*32*3)
@@ -70,21 +70,31 @@ def divide(image, width, height):
     bsporecyst.on_clicked(sporecystbutton)
     bnone.on_clicked(nonebutton)
     mpl.show()
-    tmp.save('BankOImages/something_'+str(width)+'_'+str(height)+'.TIF')
+    name = filename.split(".")
+    outF = open('BankOImages/'+name[0]+'_'+str(width)+'_'+str(height)+'.txt', "w")
+    textList = [str(currentTag)]
+    for line in textList:
+        # write line to output file
+        outF.write(line)
+        outF.write("\n")
+    outF.close()
+
+    tmp.save('BankOImages/'+name[0]+'_'+str(width)+'_'+str(height)+'.TIF')
 
 
 
 
 if __name__ == "__main__":
     global currentTag
-    i = Image.open('01195655.TIF')
+    filename=input("put name of file here with extension")
+    i = Image.open(filename)
     iar = i.getdata()
     (w, h) = i.width, i.height
     snum = int(input("Enter number of samples: "))
     while snum > 0:
         u = random.randint(0, w-33)
         v = random.randint(0, h-33)
-        divide(i,u,v)
+        divide(i,u,v,filename)
         snum -= 1
 
 
