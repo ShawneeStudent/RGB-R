@@ -11,7 +11,7 @@ if __name__ == '__main__':
             if ext in extensions:
                 with open(os.path.realpath("./Convert/" +file)[:-4] + ".txt") as txt:
                     out = txt.readline()
-                    if(out == "Tag.SporeCyst"):
+                    if(out == "Tag.SPORECYST"):
                         out = "B"
                     else:
                         out = out[4]
