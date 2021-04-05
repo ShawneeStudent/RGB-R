@@ -6,11 +6,11 @@ import time
 import random
 
 class Tag(Enum):
-    NONE = 0
-    ALGAE = 1
-    SPORE = 2
-    CYST = 3
-    SPORECYST = 4
+    NONE = 'N'
+    ALGAE = 'A'
+    SPORE = 'S'
+    CYST = 'C'
+    SPORECYST = 'B'
 
 global currentTag
 
@@ -71,15 +71,7 @@ def divide(image, width, height, filname):
     bnone.on_clicked(nonebutton)
     mpl.show()
     name = filename.split(".")
-    outF = open('BankOImages/'+name[0]+'_'+str(width)+'_'+str(height)+'.txt', "w")
-    textList = [str(currentTag)]
-    for line in textList:
-        # write line to output file
-        outF.write(line)
-        outF.write("\n")
-    outF.close()
-
-    tmp.save('BankOImages/'+name[0]+'_'+str(width)+'_'+str(height)+'.TIF')
+    tmp.save('BankOImages/'+name[0]+'_'+str(width)+'_'+str(height) + currentTag.value +'.TIF')
 
 
 
