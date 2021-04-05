@@ -31,7 +31,7 @@ def cystbutton(event):
 
 def sporecystbutton(event):
     global currentTag
-    currentTag = Tag.CYST
+    currentTag = Tag.SPORECYST
     mpl.close()
 
 def nonebutton(event):
