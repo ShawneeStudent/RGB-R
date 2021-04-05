@@ -65,7 +65,8 @@ class Algae(tfds.core.GeneratorBasedBuilder):
     """Yields examples."""
 
     for f in path.glob('*.TIF'):
-      with open(path.glob(f.name[:-4] + ".txt")) as l:
+      ft = path.glob(f.name[:-4] + ".txt")
+      with open(str(ft.as_uri)) as l:
           data = l.read()
           data = data.strip()
           data = data[4:]
