@@ -1,7 +1,7 @@
 """algae dataset."""
 
 import tensorflow_datasets as tfds
-from . import algae
+import algae
 
 class AlgaeTest(tfds.testing.DatasetBuilderTestCase):
   """Tests for algae dataset."""

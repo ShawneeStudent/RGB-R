@@ -1,3 +1,3 @@
 """algae dataset."""
 
-from .algae import Algae
+from algae import Algae
