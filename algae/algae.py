@@ -65,12 +65,7 @@ class Algae(tfds.core.GeneratorBasedBuilder):
     """Yields examples."""
 
     for f in path.glob('*.TIF'):
-      with path.glob(f.name[:-4] + ".txt").open() as l:
-          data = l.readline()
-          data = data[4:]
-          if data == "CYST" or data == "BOTH" or data == "SPORE":
-              data = "ALGAE"
-          yield 'key', {
-              'image': f,
-              'label': data,
-          }
+        yield 'key', {
+            'image': f,
+            'label': path.glob(f.name[:-4] + ".txt"),
+        }
