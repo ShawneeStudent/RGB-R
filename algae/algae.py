@@ -22,6 +22,10 @@ class Algae(tfds.core.GeneratorBasedBuilder):
   RELEASE_NOTES = {
       '1.0.0': 'Initial release.',
   }
+  MANUAL_DOWNLOAD_INSTRUCTIONS = """
+   Register into https://example.org/login to get the data. Place the `data.zip`
+   file in the `manual_dir/`.
+   """
 
   def _info(self) -> tfds.core.DatasetInfo:
     """Returns the dataset metadata."""
@@ -44,6 +48,9 @@ class Algae(tfds.core.GeneratorBasedBuilder):
 
   def _split_generators(self, dl_manager: tfds.download.DownloadManager):
     """Returns SplitGenerators."""
+
+
+
     # data_path is a pathlib-like `Path('<manual_dir>/data.zip')`
     archive_path = dl_manager.manual_dir / 'data.zip'
     # Extract the manually downloaded `data.zip`
@@ -51,7 +58,7 @@ class Algae(tfds.core.GeneratorBasedBuilder):
 
     # TODO(algae): Returns the Dict[split names, Iterator[Key, Example]]
     return {
-        'train': self._generate_examples(extracted_path / 'train_imgs'),
+        'train': self._generate_examples(extracted_path),
     }
 
   def _generate_examples(self, path):
