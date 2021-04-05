@@ -44,20 +44,26 @@ class Algae(tfds.core.GeneratorBasedBuilder):
 
   def _split_generators(self, dl_manager: tfds.download.DownloadManager):
     """Returns SplitGenerators."""
-    # TODO(algae): Downloads the data and defines the splits
-    path = dl_manager.download_and_extract('https://todo-data-url')
+    # data_path is a pathlib-like `Path('<manual_dir>/data.zip')`
+    archive_path = dl_manager.manual_dir / 'data.zip'
+    # Extract the manually downloaded `data.zip`
+    extracted_path = dl_manager.extract(archive_path)
 
     # TODO(algae): Returns the Dict[split names, Iterator[Key, Example]]
     return {
-        'train': self._generate_examples(path / 'train_imgs'),
-        'test': self._generate_examples(path/'test_imgs'),
+        'train': self._generate_examples(extracted_path / 'train_imgs'),
     }
 
   def _generate_examples(self, path):
     """Yields examples."""
-    # TODO(algae): Yields (key, example) tuples from the dataset
-    for f in path.glob('*.jpeg'):
-      yield 'key', {
-          'image': f,
-          'label': 'yes',
-      }
+
+    for f in path.glob('*.TIF'):
+      with path.glob(f.name[:-4] + ".txt").open() as l:
+          data = l.readline()
+          data = data[4:]
+          if data is "CYST" or data is "BOTH" or data is "SPORE":
+              data = "ALGAE"
+          yield 'key', {
+              'image': f,
+              'label': data,
+          }
