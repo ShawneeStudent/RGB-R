@@ -64,12 +64,12 @@ class Algae(tfds.core.GeneratorBasedBuilder):
   def _generate_examples(self, path):
     """Yields examples."""
 
-    for f in path.glob('*.TIF'):
+    for f in path.glob('*.png'):
       if f.name[-5] == 'N':
           data = 0
       else:
           data = 1
-      yield 'key', {
+      yield f.name, {
           'image': f,
           'label': data,
       }

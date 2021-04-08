@@ -51,7 +51,7 @@ def divide(image, width, height, filname):
     tmp = Image.frombytes("RGB", (32, 32), bytes(newImage))
     rsq = image.copy()
     draw = ImageDraw.Draw(rsq)
-    draw.rectangle(xy=[(width-1, height-1),(width+33,height+33)], outline = (255,0,0))
+    draw.rectangle(xy=[(width-1, height-1),(width+33,height+33)], outline=(255,0,0))
     mpl.imshow(rsq)
     mpl.axis([width-20, width+52, height-20, height+52])
     axalgae = mpl.axes([0.85, 0.45, 0.1, 0.075])
@@ -71,7 +71,7 @@ def divide(image, width, height, filname):
     bnone.on_clicked(nonebutton)
     mpl.show()
     name = filename.split(".")
-    tmp.save('BankOImages/'+name[0]+'_'+str(width)+'_'+str(height) + currentTag.value +'.TIF')
+    tmp.save('BankOImages/'+name[0]+'_'+str(width)+'_'+str(height) + currentTag.value +'.png')
 
 
 
