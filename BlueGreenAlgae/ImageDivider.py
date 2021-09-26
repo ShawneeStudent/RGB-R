@@ -74,19 +74,19 @@ def divide(image, width, height, filename, masterdatafolder):
     axB4 = mpl.axes([0.85, 0.15, 0.1, 0.075]) 	  #>							 <|
     axB5 = mpl.axes([0.85, 0.05, 0.1, 0.075])	  #_______________________________^
     #  ===BUTTONS===
-    balgae = Button(axB1, 'Algae') # Rename these to make buttons to relable your buttons
-    bspore = Button(axB2, 'Spore')
-    bcyst = Button(axB3, 'Cyst')
-    bsporecyst = Button(axB4, 'Both')
-    bnone = Button(axB5, 'None')
+    b1 = Button(axB1, 'Algae') # Rename these to make buttons to re-lable your buttons in the UI
+    b2 = Button(axB2, 'Spore')
+    b3 = Button(axB3, 'Cyst')
+    b4 = Button(axB4, 'Both')
+    b5 = Button(axB5, 'None')
     #  ===TYING FUNCTION CALLS TO BUTTONS===
-    balgae.on_clicked(algaebutton)  # rename the functions to match your labels
-    bspore.on_clicked(sporebutton)
-    bcyst.on_clicked(cystbutton)
-    bsporecyst.on_clicked(sporecystbutton)
-    bnone.on_clicked(nonebutton)
+    b1.on_clicked(algaebutton)  # rename the functions to function names above
+    b2.on_clicked(sporebutton)
+    b3.on_clicked(cystbutton)
+    b4.on_clicked(sporecystbutton)
+    b5.on_clicked(nonebutton)
     #  ===CLEANUP AND SAVING
-    mpl.show() # display images and buttons. keep at bottom of this func
+    mpl.show()  # display images and buttons. keep at bottom of this func
     name = filename.split(".")
     tmp.save(masterdatafolder + '/'+name[0]+'_'+str(width)+'_'+str(height) + currentTag.value +'.png')
     #tmp.save(masterdatafolder + '/' + contextLabel + '/' + name[0] + '_' + str(width) + '_' + str(height) + currentTag.value + '.png')
@@ -97,13 +97,12 @@ def samplesToCSV(filepath):
     listToBeWritten = []
     for folder in dataFolders:
         # makes dirty CSV
-        print(folder)
+        #print(folder)
         i = 0
         for sample in os.listdir(filepath+'/'+folder):
-            print(sample)
+            #print(sample)
             datapath = filepath + '/' + folder + '/' + folder+'_' + str(i)+'.png,' + folder
             listToBeWritten.append(datapath)
-            #  filewriter.writerow([datapath])
             i += 1
 
     with open("DirtyData.csv", 'w', newline='') as csvfile:
