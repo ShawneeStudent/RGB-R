@@ -20,24 +20,24 @@ class buttonEvent:
         mpl.close()
 
 
-def divide(image, width, height, TagEnum, filename, masterdatafolder):
+def divide(image, x, y, TagEnum, filename, masterdatafolder, size=32):
     """This is all of the code for showing the image to sample from as well as display all of the GUI"""
     global currentTag
     i=0
-    newImage= bytearray(32*32*3)
-    for row in range(height, height+32):
-        for pixel in range(width, width+32):
+    newImage= bytearray(size*size*3)
+    for row in range(y, y + size):
+        for pixel in range(x, x + size):
             for j in range(0, 3):
                 newImage[i]=image.getpixel((pixel, row))[i%3]
                 i+=1
-    tmp = Image.frombytes("RGB", (32, 32), bytes(newImage))
+    tmp = Image.frombytes("RGB", (size, size), bytes(newImage))
     rsq = image.copy()
     draw = ImageDraw.Draw(rsq)
-    draw.rectangle(xy=[(width-1, height-1),(width+33,height+33)], outline=(255,0,0))
+    draw.rectangle(xy=[(x - 1, y - 1), (x + size + 1, y + size + 1)], outline=(255, 0, 0))
     # HERE ^^^^^^^^^^^^^^^^
     #  ===MATPLOTLIB UI===
     mpl.imshow(rsq)
-    mpl.axis([width-20, width+52, height-20, height+52])
+    mpl.axis([x - 20, x + size + 20, y - 20, y + size + 20])
     axis = []
     for j in range(len(TagEnum), 0, -1):
         axis.append(mpl.axes([0.85, (j/10.0) - .005, 0.1, 0.075]))
@@ -60,7 +60,7 @@ def divide(image, width, height, TagEnum, filename, masterdatafolder):
     #  ===CLEANUP AND SAVING
     mpl.show()  # display images and buttons. keep at bottom of this func
     name = filename.split(".")
-    tmp.save(masterdatafolder + '/' + str(currentTag)[10:] + '/'+name[0]+'_'+str(width)+'_'+str(height) + str(currentTag)[10:13].upper() +'.png')
+    tmp.save(masterdatafolder + '/' + str(currentTag)[10:] + '/' + name[0] +'_' + str(x) + '_' + str(y) + str(currentTag)[10:13].upper() + '.png')
     #tmp.save(masterdatafolder + '/' + contextLabel + '/' + name[0] + '_' + str(width) + '_' + str(height) + currentTag.value + '.png')
 
 
@@ -98,6 +98,8 @@ if __name__ == "__main__":
     # this currently goes through the files and then asks for a number of samples from each image
     foldername = input("Name of file containing images to sample from: ")
     masterDataFolder = input("input the name of the folder you wish to save samples to: ")
+    sampleSize = int(input("Please input the size of the sample images.\nPlease use a single number as the code "
+                           "generates square images: "))
     labels = input("Input labels separated by commas Eg: label1,label2,...,labelN \n NOTE: do not input the same label twice: ")
     separatedLabels = labels.split(",")
 
@@ -122,9 +124,9 @@ if __name__ == "__main__":
         (w, h) = i.width, i.height
         snum = int(input("Enter number of samples: "))
         while snum > 0:
-            u = random.randint(0, w - 33)
-            v = random.randint(0, h - 33)
-            divide(i, u, v, TagEnum, image, masterDataFolder)
+            u = random.randint(0, w - sampleSize -1)
+            v = random.randint(0, h - sampleSize -1)
+            divide(i, u, v, TagEnum, image, masterDataFolder, sampleSize)
             snum -= 1
     samplesToCSV(masterDataFolder)
 
