@@ -6,6 +6,10 @@ import random
 import os
 import csv
 
+"""BUG WARNING:If you hit exit the MPL UI without selecting a tag it will save the image anyways and it will have the 
+    same tag as the previous sample."""
+
+
 """Code, tied to each of the buttons, that sets the current tag that will be appended to the end of the file"""
 global currentTag  # leave alone
 
@@ -16,7 +20,6 @@ class buttonEvent:
     def eventbutton(self, event):  # rename and change the enumed tag to match your labels
         global currentTag
         currentTag = self.tag
-        print(str(self.tag)[10:])
         mpl.close()
 
 
@@ -79,7 +82,7 @@ def samplesToCSV(filepath):
 
     with open("DirtyData.csv", 'w', newline='') as csvfile:
         filewriter = csv.writer(csvfile, delimiter=' ')
-        filewriter.writerow(['images', 'labels'])
+        filewriter.writerow(['images,', 'labels'])
         filewriter.writerows(listToBeWritten)
 
     with open(r'DirtyData.csv', 'r') as infile, \
