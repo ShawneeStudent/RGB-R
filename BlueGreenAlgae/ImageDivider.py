@@ -5,6 +5,7 @@ from enum import Enum
 import random
 import os
 import csv
+from Model import Model
 
 """BUG WARNING:If you hit exit the MPL UI without selecting a tag it will save the image anyways and it will have the 
     same tag as the previous sample."""
@@ -22,18 +23,69 @@ class buttonEvent:
         currentTag = self.tag
         mpl.close()
 
+def splitImage(model, image, labels, imgnum, fname, masterDataFolder, size=32):
+    (w, h) = image.width, image.height
+    counterDict = {}
+    badLabels = []
+    for label in labels:
+        counterDict[label] = 0
+    while True:
+        currentLabel = None
+        for label in labels:
+            if currentLabel == None:
+                if counterDict[label] < imgnum and badLabels.count(label) == 0:
+                    currentLabel = label
+            elif counterDict[label] < counterDict[currentLabel] and badLabels.count(label) == 0:
+                currentLabel = label
+        if currentLabel == None:
+            break
+        subimg, tag, x, y = guessImage(model, image, currentLabel, size)
+        if subimg == None:
+            badLabels.append(tag)
+            continue
+        if tag == "wrong":
+            subimg, tag = displayImage(image, x, y, labels, size)
+            if counterDict[tag] < imgnum:
+                saveImage(subimg, x, y, tag, fname, masterDataFolder)
+                counterDict[tag] += 1
+        else:
+            saveImage(subimg, x, y, tag, fname, masterDataFolder)
+            counterDict[tag] += 1
 
-def divide(image, x, y, TagEnum, filename, masterdatafolder, size=32):
+def guessImage(model, image, label, size=32):
+    guess = False
+    (w, h) = image.width, image.height
+    x, y = (0, 0)
+    failsafe = 0
+    while(not guess and failsafe < 2000):
+        x = random.randint(0, w - sampleSize - 1)
+        y = random.randint(0, h - sampleSize - 1)
+        subimg = getSubImg(image, x, y, size)
+        guess = (model.testImg(subimg) == label)
+        failsafe += 1
+    if failsafe >= 2000:
+        return (None, label, None, None)
+    subimg, tag = displayImage(image, x, y, [label, "wrong"], size)
+    return (subimg, tag, x, y)
+
+
+
+def tagImage(image, x, y, labels, filename, masterdatafolder, size=32):
+    savedimg, tag = displayImage(image, x, y, labels, size)
+    #  ===CLEANUP AND SAVING
+    saveImage(savedimg, x, y, tag, filename, masterdatafolder)
+    #tmp.save(masterdatafolder + '/' + contextLabel + '/' + name[0] + '_' + str(width) + '_' + str(height) + currentTag.value + '.png')
+
+def saveImage(image, x, y, tag, filename, masterdatafolder):
+    #  ===CLEANUP AND SAVING
+    name = filename.split(".")
+    image.save(masterdatafolder + '/' + tag + '/' + name[0] +'_' + str(x) + '_' + str(y) + tag.upper() + '.png')
+
+
+def displayImage(image, x, y, buttonlabels, size=32):
     """This is all of the code for showing the image to sample from as well as display all of the GUI"""
     global currentTag
-    i=0
-    newImage= bytearray(size*size*3)
-    for row in range(y, y + size):
-        for pixel in range(x, x + size):
-            for j in range(0, 3):
-                newImage[i]=image.getpixel((pixel, row))[i%3]
-                i+=1
-    tmp = Image.frombytes("RGB", (size, size), bytes(newImage))
+    tmp = getSubImg(image, x, y, size)
     rsq = image.copy()
     draw = ImageDraw.Draw(rsq)
     draw.rectangle(xy=[(x - 1, y - 1), (x + size + 1, y + size + 1)], outline=(255, 0, 0))
@@ -42,29 +94,35 @@ def divide(image, x, y, TagEnum, filename, masterdatafolder, size=32):
     mpl.imshow(rsq)
     mpl.axis([x - 20, x + size + 20, y - 20, y + size + 20])
     axis = []
-    for j in range(len(TagEnum), 0, -1):
-        axis.append(mpl.axes([0.85, (j/10.0) - .005, 0.1, 0.075]))
+    for j in range(len(buttonlabels), 0, -1):
+        axis.append(mpl.axes([0.85, (j / 10.0) - .005, 0.1, 0.075]))
         # SETTING POSITIONS FOR BUTTONS V
-        #>		  [X,Y,W,H]			 <|
+        # >		  [X,Y,W,H]			 <|
     ButtonClasses = []
     Buttons = []
-    for tag, ax in zip(TagEnum, axis):
+    for tag, ax in zip(buttonlabels, axis):
         #  ===GENERATING EVENT FUNCTIONS===
         event = buttonEvent(tag)
         ButtonClasses.append(event)
 
         #  ===BUTTONS===
-        button = Button(ax, str(tag)[10:])
+        button = Button(ax, tag)
         Buttons.append(button)
 
         #  ===TYING FUNCTION CALLS TO BUTTONS===
         button.on_clicked(event.eventbutton)
-
-    #  ===CLEANUP AND SAVING
     mpl.show()  # display images and buttons. keep at bottom of this func
-    name = filename.split(".")
-    tmp.save(masterdatafolder + '/' + str(currentTag)[10:] + '/' + name[0] +'_' + str(x) + '_' + str(y) + str(currentTag)[10:13].upper() + '.png')
-    #tmp.save(masterdatafolder + '/' + contextLabel + '/' + name[0] + '_' + str(width) + '_' + str(height) + currentTag.value + '.png')
+    return (tmp, currentTag)
+
+def getSubImg(image, x, y, size=32):
+    i = 0
+    newImage = bytearray(size * size * 3)
+    for row in range(y, y + size):
+        for pixel in range(x, x + size):
+            for j in range(0, 3):
+                newImage[i] = image.getpixel((pixel, row))[i % 3]
+                i += 1
+    return Image.frombytes("RGB", (size, size), bytes(newImage))
 
 
 def samplesToCSV(filepath):
@@ -99,11 +157,12 @@ if __name__ == "__main__":
 
     # new code for handling folder files
     # this currently goes through the files and then asks for a number of samples from each image
-    foldername = input("Name of file containing images to sample from: ")
-    masterDataFolder = input("input the name of the folder you wish to save samples to: ")
-    sampleSize = int(input("Please input the size of the sample images.\nPlease use a single number as the code "
-                           "generates square images: "))
-    labels = input("Input labels separated by commas Eg: label1,label2,...,labelN \n NOTE: do not input the same label twice: ")
+    #foldername = input("Name of file containing images to sample from: ")
+    foldername = "SampleImages"
+    #masterDataFolder = input("input the name of the folder you wish to save samples to: ")
+    masterDataFolder = "Output"
+    sampleSize = 32
+    labels = "algae,cyst,spore,control"
     separatedLabels = labels.split(",")
 
     try:  # for making the data folder if it doesnt exits
@@ -117,20 +176,11 @@ if __name__ == "__main__":
             pass
 
     filesList = os.listdir(foldername)
-    enumDict = {}
-    for i, tag in enumerate(separatedLabels):
-        enumDict[tag] = i
-    TagEnum = Enum("ClassTags", enumDict)
-    for image in filesList:  # for image in image file
-        i = Image.open(foldername + "/" + image)
-        iar = i.getdata()
-        (w, h) = i.width, i.height
-        snum = int(input("Enter number of samples: "))
-        while snum > 0:
-            u = random.randint(0, w - sampleSize -1)
-            v = random.randint(0, h - sampleSize -1)
-            divide(i, u, v, TagEnum, image, masterDataFolder, sampleSize)
-            snum -= 1
+    algae2 = Model("..\\Networks\\Algae 90 model")
+    for imgfile in filesList:  # for image in image file
+        image = Image.open(foldername + "/" + imgfile)
+        snum = int(input("Enter number of samples per tag: "))
+        splitImage(algae2, image, separatedLabels, snum, imgfile, masterDataFolder, sampleSize)
     samplesToCSV(masterDataFolder)
 
     # filename = input("put name of file here with extension")
