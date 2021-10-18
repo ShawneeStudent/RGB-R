@@ -43,6 +43,8 @@ def splitImage(model, image, labels, imgnum, fname, masterDataFolder, size=32):
         if subimg == None:
             badLabels.append(tag)
             continue
+        if tag == "skip":
+            continue
         if tag == "wrong":
             subimg, tag = displayImage(image, x, y, labels, size)
             if counterDict[tag] < imgnum:
@@ -65,7 +67,7 @@ def guessImage(model, image, label, size=32):
         failsafe += 1
     if failsafe >= 2000:
         return (None, label, None, None)
-    subimg, tag = displayImage(image, x, y, [label, "wrong"], size)
+    subimg, tag = displayImage(image, x, y, [label, "wrong", "skip"], size)
     return (subimg, tag, x, y)
 
 
@@ -77,6 +79,8 @@ def tagImage(image, x, y, labels, filename, masterdatafolder, size=32):
     #tmp.save(masterdatafolder + '/' + contextLabel + '/' + name[0] + '_' + str(width) + '_' + str(height) + currentTag.value + '.png')
 
 def saveImage(image, x, y, tag, filename, masterdatafolder):
+    if tag == "skip":
+        return
     #  ===CLEANUP AND SAVING
     name = filename.split(".")
     image.save(masterdatafolder + '/' + tag + '/' + name[0] +'_' + str(x) + '_' + str(y) + tag.upper() + '.png')
@@ -85,6 +89,7 @@ def saveImage(image, x, y, tag, filename, masterdatafolder):
 def displayImage(image, x, y, buttonlabels, size=32):
     """This is all of the code for showing the image to sample from as well as display all of the GUI"""
     global currentTag
+    currentTag = "skip"
     tmp = getSubImg(image, x, y, size)
     rsq = image.copy()
     draw = ImageDraw.Draw(rsq)
